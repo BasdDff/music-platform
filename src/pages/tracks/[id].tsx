@@ -8,7 +8,7 @@ import {GetServerSideProps} from "next";
 import {SERVER_ADDRESS} from "../../env";
 
 const TrackPage = ({serverTrack}) => {
-    
+
     const [track, setTrack] = useState<ITrack>(serverTrack)
     console.log(track)
     const router = useRouter()
