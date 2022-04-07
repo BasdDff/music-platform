@@ -1,13 +1,22 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import MainLayout from "../../layouts/MainLayout/MainLayout";
 import StepWrapper from "../../components/StepWrapper";
 import {Avatar, Button, Card, Grid, TextField} from "@mui/material";
 import FileUpload from "../../components/UI/FileUpload";
-import {SERVER_ADDRESS} from "../../env";
+import {trackAPI} from "../../redux/services/TrackService";
+import {useRouter} from "next/router";
 
 const Create: FC = () => {
 
+    const router = useRouter()
+
+    const [createTrack, {status}] = trackAPI.useCreateTrackMutation()
+
     const [step, setStep] = useState<number>(0)
+
+    const [name, setName] = useState("")
+    const [artist, setArtist] = useState("")
+    const [text, setText] = useState("")
 
     const [image, setImage] = useState(null)
     const [audio, setAudio] = useState(null)
@@ -19,7 +28,25 @@ const Create: FC = () => {
     const prevStep = () => {
         setStep(step => step - 1)
     }
-    console.log(step)
+
+    const send = () => {
+        const formData = new FormData()
+        formData.append("name", name)
+        formData.append("artist", artist)
+        formData.append("text", text)
+        formData.append("picture", image)
+        formData.append("audio", audio)
+        createTrack(formData)
+            .then((response) => {
+
+            })
+    }
+    useEffect(() => {
+        if (status === "fulfilled") {
+            router.push('/tracks')
+        }
+    }, [status])
+
     return (
         <MainLayout>
             <StepWrapper activeStep={step}>
@@ -28,22 +55,36 @@ const Create: FC = () => {
                         <div style={{fontSize: "1.2rem", marginBottom: "10px"}}>Загрузка трека</div>
                         {step === 0 &&
                         <Grid container direction={"row"}>
-                            <TextField label="Название трека" fullWidth style={{marginBottom: "15px"}}/>
-                            <TextField label="Имя автора" fullWidth style={{marginBottom: "15px"}}/>
-                            <TextField label="Текст песни" fullWidth multiline/>
+                            <TextField label="Название трека" fullWidth style={{marginBottom: "15px"}}
+                                       value={name}
+                                       onChange={(e) => setName(e.target.value)}/>
+                            <TextField label="Имя автора" fullWidth style={{marginBottom: "15px"}}
+                                       value={artist}
+                                       onChange={(e) => setArtist(e.target.value)}/>
+                            <TextField label="Текст песни" fullWidth multiline
+                                       value={text}
+                                       onChange={(e) => setText(e.target.value)}/>
                         </Grid>
                         }
                         {step === 1 &&
                         <FileUpload setFile={setImage} accept="image/*">
                             <Button>Загрузить изображение</Button>
+                            {image &&
                             <Avatar
                                 src={URL.createObjectURL(image)}
-                                sx={{width: 300, height: 300, borderRadius: 0, marginRight: "20px", marginBottom: "20px"}}
+                                sx={{
+                                    width: 300,
+                                    height: 300,
+                                    borderRadius: 0,
+                                    marginRight: "20px",
+                                    marginBottom: "20px"
+                                }}
                             />
+                            }
                         </FileUpload>
                         }
                         {step === 2 &&
-                        <FileUpload setFile={() => ({})} accept="audio/*">
+                        <FileUpload setFile={setAudio} accept="audio/*">
                             <Button>Загрузить трек</Button>
                         </FileUpload>
                         }
@@ -56,10 +97,9 @@ const Create: FC = () => {
                 <Button onClick={nextStep} variant="outlined">Далее</Button>
                 }
                 {step === 2 &&
-                <Button variant="outlined">Отправить</Button>
+                <Button variant="outlined" onClick={send}>Отправить</Button>
                 }
             </Grid>
-
         </MainLayout>
     );
 };

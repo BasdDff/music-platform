@@ -5,21 +5,42 @@ import styles from "./TrackItem.module.scss"
 import {Delete, Pause, PlayArrow} from "@mui/icons-material";
 import {SERVER_ADDRESS} from "../../env";
 import {useRouter} from "next/router";
+import {pauseTrack, playTrack, setActiveTrack} from "../../redux/actions-creators/player";
+import {useAppDispatch} from "../../hooks/useAppDispatch";
+import {useAppSelector} from "../../hooks/useAppSelector";
 
 interface TrackItemProps {
     track: ITrack
-    active?: boolean
 }
 
-const TrackItem: FC<TrackItemProps> = ({track, active = false}) => {
+const TrackItem: FC<TrackItemProps> = ({track}) => {
     const router = useRouter()
+    const dispatch = useAppDispatch()
+    const {pause, active} = useAppSelector(state => state.playerReducer)
+
+    const playTrackItem = () => {
+        if (track._id === active?._id) {
+            if (pause) {
+                dispatch(playTrack())
+            } else {
+                dispatch(pauseTrack())
+            }
+        } else {
+            dispatch(setActiveTrack(track))
+            dispatch(playTrack())
+        }
+    }
+
     return (
         <Card className={styles.track}>
-            <IconButton>
-                {active ?
-                    <Pause/>
-                    :
+            <IconButton onClick={playTrackItem}>
+                {pause ?
                     <PlayArrow/>
+                    :
+                    track._id === active?._id ?
+                        <Pause/>
+                        :
+                        <PlayArrow/>
                 }
             </IconButton>
             <Avatar
@@ -32,7 +53,7 @@ const TrackItem: FC<TrackItemProps> = ({track, active = false}) => {
                 <div className={styles.track__artist}>{track.artist}</div>
             </Grid>
             <div className={styles.track__duration}>
-                {active && <div> 02:42 / 03:22 </div>}
+                {/*{active && <div> 02:42 / 03:22 </div>}*/}
                 <IconButton>
                     <Delete/>
                 </IconButton>

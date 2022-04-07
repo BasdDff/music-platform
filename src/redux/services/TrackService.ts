@@ -16,6 +16,14 @@ export const trackAPI = createApi({
                 }
             }),
             providesTags: result => ["Track"]
+        }),
+        createTrack: build.mutation({
+            query: (track) => ({
+                url: "/tracks",
+                method: "POST",
+                body: track
+            }),
+            invalidatesTags: ["Track"]
         })
     })
 })
