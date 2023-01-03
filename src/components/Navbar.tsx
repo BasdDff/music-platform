@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
+import {styled, useTheme} from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import CssBaseline from '@mui/material/CssBaseline';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import MuiAppBar, {AppBarProps as MuiAppBarProps} from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
@@ -16,8 +16,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import { menuItems } from '../assets/menuItems';
-import { useRouter } from 'next/router';
+import {menuItems} from '../assets/menuItems';
+import {useRouter} from 'next/router';
+import {useAppSelector} from "../hooks/useAppSelector";
+import ModalLogin from "./ModalLogin";
 
 const drawerWidth = 240;
 
@@ -27,7 +29,7 @@ interface AppBarProps extends MuiAppBarProps {
 
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
-})<AppBarProps>(({ theme, open }) => ({
+})<AppBarProps>(({theme, open}) => ({
     transition: theme.transitions.create(['margin', 'width'], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -42,7 +44,7 @@ const AppBar = styled(MuiAppBar, {
     }),
 }));
 
-const DrawerHeader = styled('div')(({ theme }) => ({
+const DrawerHeader = styled('div')(({theme}) => ({
     display: 'flex',
     alignItems: 'center',
     padding: theme.spacing(0, 1),
@@ -65,9 +67,11 @@ export default function Navbar() {
 
     const router = useRouter()
 
+    const {isAuth, user} = useAppSelector(state => state.authReducer)
+
     return (
-        <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
+        <Box sx={{display: 'flex'}}>
+            <CssBaseline/>
             <AppBar position="fixed" open={open}>
                 <Toolbar>
                     <IconButton
@@ -75,13 +79,28 @@ export default function Navbar() {
                         aria-label="open drawer"
                         onClick={handleDrawerOpen}
                         edge="start"
-                        sx={{ mr: 2, ...(open && { display: 'none' }) }}
+                        sx={{mr: 2, ...(open && {display: 'none'})}}
                     >
-                        <MenuIcon />
+                        <MenuIcon/>
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
-                        Меню
-                    </Typography>
+                    <div style={{width: "100%", display: "flex", justifyContent: "space-between"}}>
+                        <Typography variant="h6" noWrap component="div">
+                            Меню
+                        </Typography>
+                        <div>
+                            {isAuth ?
+                                <Typography variant="h6" noWrap component="div">
+                                    {user.email}
+                                </Typography> :
+                                <Typography variant="h6" noWrap component="div">
+                                    <ModalLogin>
+                                        Авторизуйтесь
+                                    </ModalLogin>
+                                </Typography>
+                            }
+                        </div>
+
+                    </div>
                 </Toolbar>
             </AppBar>
             <Drawer
@@ -99,16 +118,16 @@ export default function Navbar() {
             >
                 <DrawerHeader>
                     <IconButton onClick={handleDrawerClose}>
-                        {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                        {theme.direction === 'ltr' ? <ChevronLeftIcon/> : <ChevronRightIcon/>}
                     </IconButton>
                 </DrawerHeader>
                 <List>
                     {menuItems.map(({value, href}, index) => (
                         <ListItem button key={href} onClick={() => router.push(href)}>
                             <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                                {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
                             </ListItemIcon>
-                            <ListItemText primary={value} />
+                            <ListItemText primary={value}/>
                         </ListItem>
                     ))}
                 </List>

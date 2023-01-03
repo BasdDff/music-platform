@@ -8,6 +8,7 @@ import {useRouter} from "next/router";
 import {pauseTrack, playTrack, setActiveTrack} from "../../redux/actions-creators/player";
 import {useAppDispatch} from "../../hooks/useAppDispatch";
 import {useAppSelector} from "../../hooks/useAppSelector";
+import {trackAPI} from "../../redux/services/TrackService";
 
 interface TrackItemProps {
     track: ITrack
@@ -17,6 +18,8 @@ const TrackItem: FC<TrackItemProps> = ({track}) => {
     const router = useRouter()
     const dispatch = useAppDispatch()
     const {pause, active} = useAppSelector(state => state.playerReducer)
+
+    const [deleteTrack] = trackAPI.useDeleteTrackMutation()
 
     const playTrackItem = () => {
         if (track._id === active?._id) {
@@ -54,7 +57,7 @@ const TrackItem: FC<TrackItemProps> = ({track}) => {
             </Grid>
             <div className={styles.track__duration}>
                 {/*{active && <div> 02:42 / 03:22 </div>}*/}
-                <IconButton>
+                <IconButton onClick={() => deleteTrack(track)}>
                     <Delete/>
                 </IconButton>
             </div>

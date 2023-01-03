@@ -6,11 +6,21 @@ import {useRouter} from "next/router";
 import $api from "../../http";
 import {GetServerSideProps} from "next";
 import {SERVER_ADDRESS} from "../../env";
+import {trackAPI} from "../../redux/services/TrackService";
 
 const TrackPage = ({serverTrack}) => {
 
     const [track, setTrack] = useState<ITrack>(serverTrack)
     console.log(track)
+
+    const [text, setText] = useState<string>("")
+    const onChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setText(event.target.value)
+    }
+    console.log(text)
+
+    const [addComment] = trackAPI.useAddCommentMutation()
+
     const router = useRouter()
     return (
         <MainLayout>
@@ -32,9 +42,12 @@ const TrackPage = ({serverTrack}) => {
             <p style={{fontSize: "1rem", marginBottom: "20px"}}>{track.text}</p>
             <div style={{fontSize: "1.2rem", marginBottom: "10px"}}> Коментарии</div>
             <Grid container>
-                <TextField label="Ваше имя" style={{width: "50%", marginBottom: "5px"}}/>
-                <TextField label="Комментарий" fullWidth multiline rows={5} style={{marginBottom: "5px"}}/>
-                <Button variant="outlined" style={{marginBottom: "20px"}}>
+                {/*<TextField label="Ваше имя" style={{width: "50%", marginBottom: "5px"}}/>*/}
+                <TextField label="Комментарий" fullWidth multiline rows={5} style={{marginBottom: "5px"}}
+                           onChange={onChangeText}/>
+                <Button variant="outlined" style={{marginBottom: "20px"}} onClick={() => {
+                    addComment({text: text, trackId: track._id})
+                }}>
                     Отправить
                 </Button>
             </Grid>

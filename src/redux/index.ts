@@ -1,9 +1,11 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {trackAPI} from "./services/TrackService";
 import playerReducer from "./reducers/PlayerSlice"
+import authReducer from "./reducers/AuthSlice"
 
 const rootReducer = combineReducers({
     playerReducer,
+    authReducer,
     [trackAPI.reducerPath]: trackAPI.reducer
 })
 

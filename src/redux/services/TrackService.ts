@@ -1,6 +1,7 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/dist/query/react";
-import {ITrack} from "../../types/ITrack";
+import {IComment, ITrack} from "../../types/ITrack";
 
+//https://redux-toolkit.js.org/rtk-query/usage/server-side-rendering
 
 export const trackAPI = createApi({
     reducerPath: "trackAPI",
@@ -21,9 +22,35 @@ export const trackAPI = createApi({
             query: (track) => ({
                 url: "/tracks",
                 method: "POST",
-                body: track
+                body: track,
+                headers: {
+                    accept: 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                }
             }),
             invalidatesTags: ["Track"]
-        })
+        }),
+        addComment: build.mutation({
+           query: (comment) => ({
+               url: "/tracks/comment",
+               method: "POST",
+               body: comment,
+               headers: {
+                   accept: 'application/json',
+                   Authorization: `Bearer ${localStorage.getItem('token')}`,
+               }
+           })
+        }),
+        deleteTrack: build.mutation({
+            query: (track) => ({
+                url: `/tracks/${track._id}`,
+                method: "DELETE",
+                headers: {
+                    accept: 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                }
+            }),
+            invalidatesTags: ["Track"]
+        }),
     })
 })
