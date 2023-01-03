@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from "mongoose"
+import {ApiProperty} from "@nestjs/swagger";
 
 export type TrackDocument = Track & Document;
 
@@ -23,6 +24,13 @@ export class Track {
 
     @Prop()
     audio: string;
+
+    @ApiProperty({example: '6308b748d6c1e29812db7f9e', description: "Email"})
+    @Prop({
+        type: String,
+        required: true
+    })
+    userId: string
 
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}]})
     comments: Comment[]

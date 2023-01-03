@@ -1,11 +1,12 @@
-import {Injectable} from "@nestjs/common";
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Track, TrackDocument} from "./schemas/track.schema";
-import {Model, ObjectId} from "mongoose"
+import {Model, ObjectId, Types} from "mongoose"
 import {Comment, CommentDocument} from "./schemas/comment.schema";
 import {CreateTrackDto} from "./dto/create-track.dto";
 import {CreateCommentDto} from "./dto/create-comment.dto";
 import {FileService, FileType} from "../file/file.service";
+import {log} from "util";
 
 @Injectable()
 export class TrackService {
@@ -15,10 +16,10 @@ export class TrackService {
                  ) {
     }
 
-    async create(dto: CreateTrackDto, picture, audio): Promise<Track> {
+    async create(dto: CreateTrackDto, picture, audio, userId: Types.ObjectId): Promise<Track> {
         const audioPath = this.fileService.createFile(FileType.AUDIO, audio)
         const picturePath = this.fileService.createFile(FileType.IMAGE, picture)
-        const track = await this.trackModel.create({...dto, listens: 0, audio: audioPath, picture: picturePath})
+        const track = await this.trackModel.create({...dto, listens: 0, audio: audioPath, picture: picturePath, userId: userId})
         return track
     }
 
@@ -32,21 +33,32 @@ export class TrackService {
         return track
     }
 
-    async delete(id: ObjectId): Promise<ObjectId> {
-        const track = await this.trackModel.findByIdAndDelete(id)
-        return track._id
+    async delete(_id: ObjectId, userId: string): Promise<ObjectId> {
+        const track = await this.trackModel.findById(_id)
+        if (track) {
+            if (track.userId === userId) {
+                return track.deleteOne()
+            } else {
+                // @ts-ignore
+                throw new HttpException("Вы можете удалить только свой трек", HttpStatus.FORBIDDEN)
+            }
+        }
+        //const track = await this.trackModel.findByIdAndDelete(_id)
     }
 
-    async addComment(dto: CreateCommentDto): Promise<Comment> {
+    async addComment(dto: CreateCommentDto, userId: Types.ObjectId, username: string): Promise<Comment> {
+        //console.log(dto)
         const track = await this.trackModel.findById(dto.trackId)
-        const comment = await this.commentModel.create({...dto})
+        const comment = await this.commentModel.create({...dto, userId: userId, username: username})
+        //console.log(track)
         track.comments.push(comment._id)
+        console.log(track)
         await track.save()
         return comment
     }
 
-    async listen(id: ObjectId) {
-        const track = await this.trackModel.findById(id)
+    async listen(_id: ObjectId) {
+        const track = await this.trackModel.findById(_id)
         track.listens += 1
         await track.save()
     }
